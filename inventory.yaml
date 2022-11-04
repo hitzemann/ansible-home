@@ -1,0 +1,28 @@
+routers:
+  hosts:
+    NG-Distri:
+      ansible_host: 192.168.1.1
+      openwrt_scp_if_ssh: yes
+      openwrt_system_hostnanme: NG-Distri
+
+aps:
+  hosts:
+    hapAC3-WZ:
+      ansible_host: 192.168.1.2
+      openwrt_scp_if_ssh: yes
+      openwrt_system_hostname: hapAC3-WZ
+    hapAC3-AZ:
+      ansible_host: 192.168.1.3
+      openwrt_scp_if_ssh: yes
+      openwrt_system_hostname: hapAC3-AZ
+
+openwrt:
+  children:
+    routers:
+    aps:
+
+servers:
+  hosts:
+    NAS02:
+      ansible_host: 192.168.1.4
+      ansible_user: root

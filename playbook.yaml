@@ -1,0 +1,239 @@
+- hosts: routers
+  name: Routers
+
+  vars:
+    ansible_user: root
+    openwrt_network_wan_proto: pppoe
+    openwrt_network_wan_username: "{{ pppoe_user }}"
+    openwrt_network_wan_password: "{{ pppoe_pass }}"
+    openwrt_system_zonename: Europe/Berlin
+    openwrt_wireless_country: DE
+    openwrt_wireless_ssid: R2D2
+    openwrt_wireless_encryption: sae-mixed
+    openwrt_wireless_key: "{{ wifi_pass }}"
+
+  roles:
+    - nn708.openwrt.network
+    - nn708.openwrt.system
+    - nn708.openwrt.wireless
+
+  tasks:
+    - name: Remove packages
+      community.general.packaging.os.opkg:
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - wpad-basic-wolfssl
+    - name: Install packages
+      community.general.packaging.os.opkg:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - wpad-wolfssl
+        - kmod-nf-nathelper-extra
+        - luci-ssl
+        - luci-app-sqm
+        - umdns
+        - zerotier
+    - name: Enable and start services
+      ansible.builtin.service:
+        name: "{{ item }}"
+        state: started
+        enabled: true
+      loop:
+        - wpad
+        - umdns
+    - name: Copy authorized keys
+      ansible.builtin.copy:
+        src: files/authorized_keys
+        dest: /etc/dropbear/authorized_keys
+        owner: root
+        group: root
+        mode: 0600
+    - name: Revert pending changes
+      uci:
+        command: revert
+    - name: Turn off leds
+      uci:
+        command: set
+        key: "system.led_{{ item.name }}"
+        type: led
+        value:
+          trigger: none
+          default: 0
+          name: "{{ item.name }}"
+          sysfs: "{{ item.path }}"
+        ansible.builtin.register: _leds
+      when: ansible_facts['openwrt_board']['board_name'] == "netgear,wax202"
+      loop:
+        - { path: 'green:net', name: 'internet' }
+        - { path: 'green:lan1', name: 'lan1' }
+        - { path: 'green:lan2', name: 'lan2' }
+        - { path: 'green:lan3', name: 'lan3' }
+        - { path: 'green:power', name: 'power' }
+        - { path: 'green:wifi2g', name: 'wifi2g' }
+        - { path: 'green:wifi5g', name: 'wifi5g' }
+      notify:
+        - Restart led
+    - name: Set WAN to VLAN 7
+      uci:
+        command: set
+        key: network.wan
+        value:
+          device: wan.7
+    - name: Set WiFi radio channels
+      uci:
+        command: set
+        key: "{{ item.key }}"
+        value:
+          channels: "{{ item.channels }}"
+      loop:
+        - { key: 'wireless.radio0', channels: '1 6 11' }
+        - { key: 'wireless.radio1', channels: '32-144' }
+    - name: Configure WiFi interfaces
+      uci:
+        command: ensure
+        config: wireless
+        type: wifi-iface
+        find_by:
+          device: "{{ item }}"
+          mode: ap
+        value:
+          wpa_disable_eapol_key_retries: 1
+          tdls_prohibit: 1
+          ieee80211w: 1
+      loop:
+        - radio0
+        - radio1
+    - name: Cleanup wlan config
+      uci:
+        command: absent
+        config: wireless
+        type: wifi-iface
+        find_by:
+          device: "{{ item }}"
+          mode: ap
+        value:
+          ieee80211k:
+          rrm_neighbor_report:
+          rrm_beacon_report:
+          time_advertisement:
+          time_zone:
+          wnm_sleep_mode:
+          bss_transition:
+          ieee80211r:
+          nasid:
+      loop:
+        - radio0
+        - radio1
+    - name: Configure zerotier network
+      uci:
+        command: set
+        key: zerotier.openwrt_network
+        value:
+          join:
+            - "{{ zerotier_join }}"
+          enabled: 1
+          secret: "{{ zerotier_secret }}"
+        when: zerotier_join is defined and zerotier_secret is defined
+    - name: Commit changes
+      uci:
+        command: commit
+      notify: reload wifi
+
+  handlers:
+    - name: Restart led
+      service:
+        name: led
+        state: reloaded
+
+- hosts: aps
+  name: Dumb APs
+
+  vars:
+    ansible_user: root
+    openwrt_system_zonename: Europe/Berlin
+
+  roles:
+    - nn708.openwrt.system
+    - nn708.openwrt.dumb_ap
+
+  tasks:
+    - name: Remove packages
+      community.general.packaging.os.opkg:
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - wpad-basic-wolfssl
+    - name: Install packages
+      community.general.packaging.os.opkg:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - wpad-wolfssl
+        - luci-ssl
+        - umdns
+    - name: Enable and start services
+      ansible.builtin.service:
+        name: "{{ item }}"
+        state: started
+        enabled: true
+      loop:
+        - wpad
+        - umdns
+    - name: Copy authorized keys
+      ansible.builtin.copy:
+        src: files/authorized_keys
+        dest: /etc/dropbear/authorized_keys
+        owner: root
+        group: root
+        mode: 0600
+    - name: Revert pending changes
+      uci:
+        command: revert
+    - name: Turn off PoE
+      uci:
+        command: ensure
+        config: system
+        type: gpio_switch
+        find_by:
+          name: PoE Passthrough
+        value:
+          value: 0
+      notify:
+        - Restart gpio
+      when: ansible_facts['openwrt_board']['board_name'] == "mikrotik,hap-ac3"
+    - name: Turn off leds
+      uci:
+        command: ensure
+        config: system
+        type: led
+        find_by:
+          sysfs: "{{ item.path }}"
+        value:
+          trigger: none
+          default: 0
+          name: "{{ item.name }}"
+      notify:
+        - Restart led
+      when: ansible_facts['openwrt_board']['board_name'] == "mikrotik,hap-ac3"
+      loop:
+        - { path: 'green:wan', name: 'Internet' }
+        - { path: 'green:lan1', name: 'LAN1' }
+        - { path: 'green:lan2', name: 'LAN2' }
+        - { path: 'green:lan3', name: 'LAN3' }
+        - { path: 'green:lan4', name: 'LAN4' }
+        - { path: 'blue:status', name: 'Power' }
+    - name: Commit changes
+      uci:
+        command: commit
+
+  handlers:
+    - name: Restart led
+      ansible.builtin.service:
+        name: led
+        state: reloaded
+    - name: Restart gpio
+      ansible.builtin.service:
+        name: gpio_switch
+        state: reloaded
