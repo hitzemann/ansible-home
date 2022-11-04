@@ -143,7 +143,7 @@
 
   handlers:
     - name: Restart led
-      service:
+      ansible.builtin.service:
         name: led
         state: reloaded
 
