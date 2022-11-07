@@ -191,6 +191,13 @@
     - name: Revert pending changes
       uci:
         command: revert
+    - name: Set NTP
+      uci:
+        command: set
+        key: system.ntp
+        value:
+          server:
+            - 192.168.1.1
     - name: Turn off PoE
       uci:
         command: ensure
@@ -242,11 +249,19 @@
   name: Servers
 
   tasks:
+    - name: Copy authorized keys
+      ansible.builtin.copy:
+        src: files/authorized_keys
+        dest: /root/.ssh/authorized_keys
+        owner: root
+        group: root
+        mode: 0600
     - name: Update plugin repo
       ansible.builtin.command: plugin checkall
       changed_when: false
-
+      when: ansible_distribution == "Slackware"
     - name: Update plugins
       ansible.builtin.command: plugin updateall
       register: _pluginupdateall
       changed_when: "'plg' in _pluginupdateall.stdout"
+      when: ansible_distribution == "Slackware"
