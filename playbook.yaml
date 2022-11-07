@@ -237,3 +237,16 @@
       ansible.builtin.service:
         name: gpio_switch
         state: reloaded
+
+- hosts: servers
+  name: Servers
+
+  tasks:
+    - name: Update plugin repo
+      ansible.builtin.command: plugin checkall
+      changed_when: false
+
+    - name: Update plugins
+      ansible.builtin.command: plugin updateall
+      register: _pluginupdateall
+      changed_when: "'plg' in _pluginupdateall.stdout"
