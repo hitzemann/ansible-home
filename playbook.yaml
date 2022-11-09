@@ -8,7 +8,7 @@
     openwrt_network_wan_password: "{{ pppoe_pass }}"
     openwrt_system_zonename: Europe/Berlin
     openwrt_wireless_country: DE
-    openwrt_wireless_ssid: R2D2
+    openwrt_wireless_ssid: "{{ wifi_ssid }}"
     openwrt_wireless_encryption: sae-mixed
     openwrt_wireless_key: "{{ wifi_pass }}"
 
