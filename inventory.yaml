@@ -21,6 +21,10 @@ openwrt:
     routers:
     aps:
 
+docker:
+  children:
+    servers:
+
 servers:
   hosts:
     NAS02:
