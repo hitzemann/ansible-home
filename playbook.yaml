@@ -20,13 +20,13 @@
 
   tasks:
     - name: Remove conflicting packages
-      community.general.packaging.os.opkg:
+      community.general.opkg:
         name: "{{ item }}"
         state: absent
       loop:
         - wpad-basic-wolfssl
     - name: Install packages
-      community.general.packaging.os.opkg:
+      community.general.opkg:
         name: "{{ item }}"
         state: present
       loop:
@@ -140,13 +140,13 @@
 
   tasks:
     - name: Remove packages
-      community.general.packaging.os.opkg:
+      community.general.opkg:
         name: "{{ item }}"
         state: absent
       loop:
         - wpad-basic-wolfssl
     - name: Install packages
-      community.general.packaging.os.opkg:
+      community.general.opkg:
         name: "{{ item }}"
         state: present
       loop:
