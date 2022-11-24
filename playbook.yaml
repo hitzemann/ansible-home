@@ -222,8 +222,8 @@
     - name: Install Python requirements
       ansible.builtin.pip:
         name: docker
-    - name: Run needed containers
-      community.docker.docker_container:
-        name: "{{ item }}"
-        state: started
-      loop: "{{ run_containers }}"
+        # - name: Run needed containers
+        # community.docker.docker_container:
+        # name: "{{ item }}"
+        # state: started
+        # loop: "{{ run_containers }}"
