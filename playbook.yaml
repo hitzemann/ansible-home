@@ -120,12 +120,6 @@
         command: commit
       notify: reload wifi
 
-  handlers:
-    - name: Restart led
-      ansible.builtin.service:
-        name: led
-        state: reloaded
-
 - hosts: aps
   name: Dumb APs
 
@@ -195,10 +189,6 @@
         command: commit
 
   handlers:
-    - name: Restart led
-      ansible.builtin.service:
-        name: led
-        state: reloaded
     - name: Restart gpio
       ansible.builtin.service:
         name: gpio_switch
