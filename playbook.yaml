@@ -135,7 +135,7 @@
             - "{{ zerotier_join }}"
           enabled: 1
           secret: "{{ zerotier_secret }}"
-        when: zerotier-networkid is defined and zerotier-secret is defined
+        when: zerotier_join is defined and zerotier_secret is defined
     - name: Commit changes
       uci:
         command: commit
