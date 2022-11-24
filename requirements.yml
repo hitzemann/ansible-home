@@ -1,0 +1,6 @@
+roles:
+- name: gekmihesg.openwrt
+collections:
+- name: community.general
+- name: community.docker
+- name: nn708.openwrt
