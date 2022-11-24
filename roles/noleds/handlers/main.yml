@@ -1,0 +1,4 @@
+- name: Restart led
+  ansible.builtin.service:
+    name: led
+    state: reloaded

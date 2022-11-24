@@ -16,6 +16,7 @@
     - nn708.openwrt.network
     - nn708.openwrt.system
     - nn708.openwrt.wireless
+    - noleds
 
   tasks:
     - name: Remove conflicting packages
@@ -53,28 +54,6 @@
     - name: Revert pending changes
       uci:
         command: revert
-    - name: Turn off leds
-      uci:
-        command: set
-        key: "system.led_{{ item.name }}"
-        type: led
-        value:
-          trigger: none
-          default: 0
-          name: "{{ item.name }}"
-          sysfs: "{{ item.path }}"
-        ansible.builtin.register: _leds
-      when: ansible_facts['openwrt_board']['board_name'] == "netgear,wax202"
-      loop:
-        - { path: 'green:net', name: 'internet' }
-        - { path: 'green:lan1', name: 'lan1' }
-        - { path: 'green:lan2', name: 'lan2' }
-        - { path: 'green:lan3', name: 'lan3' }
-        - { path: 'green:power', name: 'power' }
-        - { path: 'green:wifi2g', name: 'wifi2g' }
-        - { path: 'green:wifi5g', name: 'wifi5g' }
-      notify:
-        - Restart led
     - name: Set WAN to VLAN 7
       uci:
         command: set
@@ -157,6 +136,7 @@
   roles:
     - nn708.openwrt.system
     - nn708.openwrt.dumb_ap
+    - noleds
 
   tasks:
     - name: Remove packages
@@ -210,27 +190,6 @@
       notify:
         - Restart gpio
       when: ansible_facts['openwrt_board']['board_name'] == "mikrotik,hap-ac3"
-    - name: Turn off leds
-      uci:
-        command: ensure
-        config: system
-        type: led
-        find_by:
-          sysfs: "{{ item.path }}"
-        value:
-          trigger: none
-          default: 0
-          name: "{{ item.name }}"
-      notify:
-        - Restart led
-      when: ansible_facts['openwrt_board']['board_name'] == "mikrotik,hap-ac3"
-      loop:
-        - { path: 'green:wan', name: 'Internet' }
-        - { path: 'green:lan1', name: 'LAN1' }
-        - { path: 'green:lan2', name: 'LAN2' }
-        - { path: 'green:lan3', name: 'LAN3' }
-        - { path: 'green:lan4', name: 'LAN4' }
-        - { path: 'blue:status', name: 'Power' }
     - name: Commit changes
       uci:
         command: commit
