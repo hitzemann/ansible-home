@@ -4,16 +4,11 @@
 
 1. [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) should be installed on your control node, but nothing needs to be installed on your OpenWrt devices.
 
-2. These playbooks depend on `gekmihesg.openwrt`. Install it using
+2. These playbooks depend on some roles and collections. Install them using
 
     ```
-    ansible-galaxy install gekmihesg.openwrt
-    ```
-
-3. These playbooks depend on `nn708.openwrt`. Install it using
-
-    ```
-    ansible-galaxy collection install nn708.openwrt
+    ansible-galaxy role install -r requirements.yml
+    ansible-galaxy collection install -r requirements.yml
     ```
 
 ## Other TODOs
@@ -26,7 +21,7 @@ Create `group_vars/openwrt` - preferably as a vault and add the following vars:
 - `pppoe-pass`: The password for `pppoe-user`
 - `wifi-ssid`: Your SSID
 - `wifi-pass`: The password for your SSID
-- `zerotier-networkid`: The ID of the zerotier network to join
-- `zerotier-secret`: The zerotier secret string. This is a bit tricky as it is generated after joining manually once.
+- `zerotier_networkid`: The ID of the zerotier network to join
+- `zerotier_secret`: The zerotier secret string. This is a bit tricky as it is generated after joining manually once.
 
 The last two are not mandatory, I already test if they are defined otherwise the task is skipped.
