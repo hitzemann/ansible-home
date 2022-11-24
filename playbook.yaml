@@ -18,7 +18,7 @@
     - nn708.openwrt.wireless
 
   tasks:
-    - name: Remove packages
+    - name: Remove conflicting packages
       community.general.packaging.os.opkg:
         name: "{{ item }}"
         state: absent
@@ -256,11 +256,11 @@
         owner: root
         group: root
         mode: 0600
-    - name: Update plugin repo
+    - name: Update NAS plugin repo
       ansible.builtin.command: plugin checkall
       changed_when: false
       when: ansible_distribution == "Slackware"
-    - name: Update plugins
+    - name: Update NAS plugins
       ansible.builtin.command: plugin updateall
       register: _pluginupdateall
       changed_when: "'plg' in _pluginupdateall.stdout"
