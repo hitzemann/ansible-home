@@ -1,7 +1,10 @@
+- name: Populate Variables
+  ansible.builtin.include_vars:
+    file: "{{ ansible_facts['openwrt_board']['board_name'] }}.yaml"
 - name: Revert pending changes
   uci:
     command: revert
-- name: Turn off leds hAP-ac3
+- name: Turn off LEDs
   uci:
     command: ensure
     config: system
@@ -14,37 +17,7 @@
       name: "{{ item.name }}"
   notify:
     - Restart led
-  when: ansible_facts['openwrt_board']['board_name'] == "mikrotik,hap-ac3"
-  loop:
-    - { path: 'green:wan', name: 'Internet' }
-    - { path: 'green:lan1', name: 'LAN1' }
-    - { path: 'green:lan2', name: 'LAN2' }
-    - { path: 'green:lan3', name: 'LAN3' }
-    - { path: 'green:lan4', name: 'LAN4' }
-    - { path: 'blue:status', name: 'Power' }
-
-- name: Turn off leds WAX202
-  uci:
-    command: set
-    key: "system.led_{{ item.name }}"
-    type: led
-    value:
-      trigger: none
-      default: 0
-      name: "{{ item.name }}"
-      sysfs: "{{ item.path }}"
-    ansible.builtin.register: _leds
-  when: ansible_facts['openwrt_board']['board_name'] == "netgear,wax202"
-  loop:
-    - { path: 'green:net', name: 'internet' }
-    - { path: 'green:lan1', name: 'lan1' }
-    - { path: 'green:lan2', name: 'lan2' }
-    - { path: 'green:lan3', name: 'lan3' }
-    - { path: 'green:power', name: 'power' }
-    - { path: 'green:wifi2g', name: 'wifi2g' }
-    - { path: 'green:wifi5g', name: 'wifi5g' }
-  notify:
-    - Restart led
+  loop: "{{ leds }}"
 - name: Commit pending changes
   uci:
     command: commit

@@ -1,0 +1,8 @@
+leds:
+  - { path: 'green:net', name: 'internet' }
+  - { path: 'green:lan1', name: 'lan1' }
+  - { path: 'green:lan2', name: 'lan2' }
+  - { path: 'green:lan3', name: 'lan3' }
+  - { path: 'green:power', name: 'power' }
+  - { path: 'green:wifi2g', name: 'wifi2g' }
+  - { path: 'green:wifi5g', name: 'wifi5g' }
