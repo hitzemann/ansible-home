@@ -221,7 +221,8 @@
   tasks:
     - name: Install Python requirements
       ansible.builtin.pip:
-        name: docker
+        name: "{{ item }}"
+      loop: "{{ pip_modules }}"
         # - name: Run needed containers
         # community.docker.docker_container:
         # name: "{{ item }}"
