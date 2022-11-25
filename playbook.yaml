@@ -34,6 +34,8 @@
         - kmod-nf-nathelper-extra
         - luci-ssl
         - luci-app-sqm
+        - tcpdump
+        - tmux
         - umdns
         - zerotier
     - name: Enable and start services
@@ -146,6 +148,7 @@
       loop:
         - wpad-wolfssl
         - luci-ssl
+        - tmux
         - umdns
     - name: Enable and start services
       ansible.builtin.service:
