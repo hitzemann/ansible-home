@@ -1,6 +1,10 @@
 - name: Populate Variables
-  ansible.builtin.include_vars:
-    file: "{{ ansible_facts['openwrt_board']['board_name'] }}.yaml"
+  ansible.builtin.include_vars: "{{ lookup('ansible.builtin.first_found', params) }}"
+  vars:
+    params:
+      files:
+        - "{{ ansible_facts['openwrt_board']['board_name'] | replace(',','_') }}.yaml"
+        - default.yaml
 - name: Revert pending changes
   uci:
     command: revert
