@@ -30,3 +30,8 @@ servers:
     NAS02:
       ansible_host: 192.168.1.4
       ansible_user: root
+
+arm64:
+  hosts:
+    pi4:
+      ansible_user: root

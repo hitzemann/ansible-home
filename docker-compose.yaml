@@ -1,0 +1,12 @@
+- name: "Build {{ zone }} containers"
+  community.docker.docker_compose:
+    project_src: "/opt/dockers/{{ zone }}"
+  register: output
+- name: "Run {{ zone }} `docker-compose up`"
+  community.docker.docker_compose:
+    project_src: "/opt/dockers/{{ zone }}"
+    build: false
+  register: output
+- name: "Assert {{ zone }} containers are starting up"
+  ansible.builtin.assert:
+    that: not output.changed

@@ -33,6 +33,7 @@
         - wpad-wolfssl
         - kmod-nf-nathelper-extra
         - luci-ssl
+        - luci-app-attendedsysupgrade
         - luci-app-sqm
         - tcpdump
         - tmux
@@ -147,6 +148,7 @@
         state: present
       loop:
         - wpad-wolfssl
+        - luci-app-attendedsysupgrade
         - luci-ssl
         - tmux
         - umdns
@@ -231,3 +233,105 @@
         # name: "{{ item }}"
         # state: started
         # loop: "{{ run_containers }}"
+
+- hosts: arm64
+  name: Raspberry Pi etc.
+
+  tasks:
+    - name: Update package cache once a week
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 86400
+      register: aptcache
+    - name: Update packages once a week
+      ansible.builtin.apt:
+        upgrade: dist
+      when: aptcache.cache_updated
+    - name: Copy authorized keys
+      ansible.builtin.copy:
+        src: files/authorized_keys
+        dest: /root/.ssh/authorized_keys
+        owner: root
+        group: root
+        mode: 0600
+    - name: Harden sshd
+      ansible.builtin.copy:
+        src: files/raspios/sshd_harden.conf
+        dest: /etc/ssh/sshd_config.d/
+        owner: root
+        group: root
+        mode: 0600
+      notify: Restart SSHD
+      when: ansible_facts['os_family'] == "Debian" and ansible_facts['architecture'] == "aarch64"
+    - name: Install needed packages
+      ansible.builtin.apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - samba
+        - vim
+        - cups
+    - name: Configure Samba
+      ansible.builtin.copy:
+        src: files/samba/
+        dest: /etc/samba/
+        owner: root
+        group: root
+        mode: 0600
+      notify:
+        - Restart Samba
+      when: false
+    - name: Enable IPv6 on docker
+      ansible.builtin.copy:
+        src: files/raspios/daemon.json
+        dest: /etc/docker/
+        owner: root
+        group: root
+        mode: 0600
+      notify: Restart docker
+    - name: Prepare compose directories
+      ansible.builtin.file:
+        path: "/opt/dockers/{{ item }}"
+        state: directory
+        owner: root
+        group: root
+        mode: 0700
+      loop:
+        - external
+        - internal
+    - name: Create docker definitions
+      ansible.builtin.template:
+        src: "files/dockers/{{ item }}/docker-compose.yml.j2"
+        dest: "/opt/dockers/{{ item }}/docker-compose.yml"
+        owner: root
+        group: root
+        mode: 0600
+      loop:
+        - external
+        - internal
+    - name: Spin up external containers
+      ansible.builtin.import_tasks: docker-compose.yaml
+      vars:
+        zone: external
+      when: false
+    - name: Spin up internal containers
+      ansible.builtin.import_tasks: docker-compose.yaml
+      vars:
+        zone: internal
+      when: false
+  handlers:
+    - name: Restart SSHD
+      ansible.builtin.service:
+        name: sshd
+        state: restarted
+    - name: Restart docker
+      ansible.builtin.service:
+        name: docker
+        state: restarted
+    - name: Restart Samba
+      ansible.builtin.service:
+        name: "{{ item }}"
+        state: restarted
+      loop:
+        - smbd
+        - nmbd
