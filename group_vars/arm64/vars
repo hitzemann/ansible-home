@@ -1,0 +1,5 @@
+cloudflared_tunnel_token: "{{ vault_cloudflared_tunnel_token }}"
+maxminddb_license: "{{ vault_maxminddb_license }}"
+mysql_root_password: "{{ vault_mysql_root_password }}"
+smtp_password: "{{ vault_smtp_password }}"
+plex_claim: "{{ vault_plex_claim }}"

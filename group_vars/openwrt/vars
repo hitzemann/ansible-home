@@ -1,0 +1,6 @@
+pppoe_user: "{{ vault_pppoe_user }}"
+pppoe_pass: "{{ vault_pppoe_pass }}"
+wifi_pass: "{{ vault_wifi_pass }}"
+wifi_ssid: "{{ vault_wifi_ssid }}"
+zerotier_join: "{{ vault_zerotier_join }}"
+zerotier_secret: "{{ vault_zerotier_secret }}"
