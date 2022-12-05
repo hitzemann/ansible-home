@@ -220,20 +220,6 @@
       changed_when: "'plg' in _pluginupdateall.stdout"
       when: ansible_distribution == "Slackware"
 
-- hosts: docker
-  name: Docker Hosts
-
-  tasks:
-    - name: Install Python requirements
-      ansible.builtin.pip:
-        name: "{{ item }}"
-      loop: "{{ pip_modules }}"
-        # - name: Run needed containers
-        # community.docker.docker_container:
-        # name: "{{ item }}"
-        # state: started
-        # loop: "{{ run_containers }}"
-
 - hosts: arm64
   name: Raspberry Pi etc.
 
