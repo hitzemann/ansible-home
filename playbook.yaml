@@ -199,27 +199,6 @@
         name: gpio_switch
         state: reloaded
 
-- hosts: servers
-  name: Servers
-
-  tasks:
-    - name: Copy authorized keys
-      ansible.builtin.copy:
-        src: files/authorized_keys
-        dest: /root/.ssh/authorized_keys
-        owner: root
-        group: root
-        mode: 0600
-    - name: Update NAS plugin repo
-      ansible.builtin.command: plugin checkall
-      changed_when: false
-      when: ansible_distribution == "Slackware"
-    - name: Update NAS plugins
-      ansible.builtin.command: plugin updateall
-      register: _pluginupdateall
-      changed_when: "'plg' in _pluginupdateall.stdout"
-      when: ansible_distribution == "Slackware"
-
 - hosts: arm64
   name: Raspberry Pi etc.
 
@@ -264,9 +243,9 @@
         owner: root
         group: root
         mode: 0600
+        backup: true
       notify:
         - Restart Samba
-      when: false
     - name: Enable IPv6 on docker
       ansible.builtin.copy:
         src: files/raspios/daemon.json
@@ -292,6 +271,7 @@
         owner: root
         group: root
         mode: 0600
+        backup: true
       loop:
         - external
         - internal
@@ -299,12 +279,10 @@
       ansible.builtin.import_tasks: docker-compose.yaml
       vars:
         zone: external
-      when: false
     - name: Spin up internal containers
       ansible.builtin.import_tasks: docker-compose.yaml
       vars:
         zone: internal
-      when: false
   handlers:
     - name: Restart SSHD
       ansible.builtin.service:
