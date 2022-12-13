@@ -1,6 +1,7 @@
 - name: "Build {{ zone }} containers"
   community.docker.docker_compose:
     project_src: "/opt/dockers/{{ zone }}"
+    pull: true
   register: output
 - name: "Run {{ zone }} `docker-compose up`"
   community.docker.docker_compose:
