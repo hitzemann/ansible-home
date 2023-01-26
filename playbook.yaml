@@ -283,6 +283,13 @@
       ansible.builtin.import_tasks: docker-compose.yaml
       vars:
         zone: internal
+    - name: Cleanup docker
+      community.docker.docker_prune:
+        containers: true
+        containers_filters:
+          until: 48h
+        images: true
+        builder_cache: true
   handlers:
     - name: Restart SSHD
       ansible.builtin.service:
