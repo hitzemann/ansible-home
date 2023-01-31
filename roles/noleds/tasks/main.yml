@@ -3,7 +3,7 @@
   vars:
     params:
       files:
-        - "{{ ansible_facts['openwrt_board']['board_name'] | replace(',','_') }}.yaml"
+        - "{{ ansible_facts['openwrt_board']['board_name'] | replace(',', '_') }}.yaml"
         - default.yaml
 - name: Revert pending changes
   uci:
