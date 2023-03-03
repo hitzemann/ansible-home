@@ -228,6 +228,15 @@
         mode: 0600
       notify: Restart SSHD
       when: ansible_facts['os_family'] == "Debian" and ansible_facts['architecture'] == "aarch64"
+    - name: SSHD CA Rollout
+      ansible.builtin.copy:
+        src: files/raspios/TrustedUserCAKeys.pub
+        dest: /etc/ssh/
+        owner: root
+        group: root
+        mode: 0600
+      notify: Restart SSHD
+      when: ansible_facts['os_family'] == "Debian" and ansible_facts['architecture'] == "aarch64"
     - name: Install needed packages
       ansible.builtin.apt:
         name: "{{ item }}"
@@ -254,6 +263,7 @@
         group: root
         mode: 0600
       notify: Restart docker
+      tags: ['docker']
     - name: Prepare compose directories
       ansible.builtin.file:
         path: "/opt/dockers/{{ item }}"
@@ -264,6 +274,7 @@
       loop:
         - external
         - internal
+      tags: ['docker']
     - name: Create docker definitions
       ansible.builtin.template:
         src: "files/dockers/{{ item }}/docker-compose.yml.j2"
@@ -275,14 +286,17 @@
       loop:
         - external
         - internal
+      tags: ['docker']
     - name: Spin up external containers
       ansible.builtin.import_tasks: docker-compose.yaml
       vars:
         zone: external
+      tags: ['docker']
     - name: Spin up internal containers
       ansible.builtin.import_tasks: docker-compose.yaml
       vars:
         zone: internal
+      tags: ['docker']
     - name: Cleanup docker
       community.docker.docker_prune:
         containers: true
@@ -290,6 +304,7 @@
           until: 48h
         images: true
         builder_cache: true
+      tags: ['docker']
   handlers:
     - name: Restart SSHD
       ansible.builtin.service:
