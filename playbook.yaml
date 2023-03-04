@@ -53,7 +53,7 @@
         dest: /etc/dropbear/authorized_keys
         owner: root
         group: root
-        mode: 0600
+        mode: "600"
     - name: Revert pending changes
       uci:
         command: revert
@@ -70,8 +70,8 @@
         value:
           channels: "{{ item.channels }}"
       loop:
-        - { key: 'wireless.radio0', channels: '1 6 11' }
-        - { key: 'wireless.radio1', channels: '32-144' }
+        - { key: "wireless.radio0", channels: "1 6 11" }
+        - { key: "wireless.radio1", channels: "32-144" }
     - name: Configure WiFi interfaces
       uci:
         command: ensure
@@ -166,7 +166,7 @@
         dest: /etc/dropbear/authorized_keys
         owner: root
         group: root
-        mode: 0600
+        mode: "600"
     - name: Revert pending changes
       uci:
         command: revert
@@ -218,14 +218,14 @@
         dest: /root/.ssh/authorized_keys
         owner: root
         group: root
-        mode: 0600
+        mode: "600"
     - name: Harden sshd
       ansible.builtin.copy:
         src: files/raspios/sshd_harden.conf
         dest: /etc/ssh/sshd_config.d/
         owner: root
         group: root
-        mode: 0600
+        mode: "600"
       notify: Restart SSHD
       when: ansible_facts['os_family'] == "Debian" and ansible_facts['architecture'] == "aarch64"
     - name: SSHD CA Rollout
@@ -234,7 +234,7 @@
         dest: /etc/ssh/
         owner: root
         group: root
-        mode: 0600
+        mode: "600"
       notify: Restart SSHD
       when: ansible_facts['os_family'] == "Debian" and ansible_facts['architecture'] == "aarch64"
     - name: Install needed packages
@@ -251,7 +251,7 @@
         dest: /etc/samba/
         owner: root
         group: root
-        mode: 0600
+        mode: "600"
         backup: true
       notify:
         - Restart Samba
@@ -261,42 +261,42 @@
         dest: /etc/docker/
         owner: root
         group: root
-        mode: 0600
+        mode: "600"
       notify: Restart docker
-      tags: ['docker']
+      tags: ["docker"]
     - name: Prepare compose directories
       ansible.builtin.file:
         path: "/opt/dockers/{{ item }}"
         state: directory
         owner: root
         group: root
-        mode: 0700
+        mode: "700"
       loop:
         - external
         - internal
-      tags: ['docker']
+      tags: ["docker"]
     - name: Create docker definitions
       ansible.builtin.template:
         src: "files/dockers/{{ item }}/docker-compose.yml.j2"
         dest: "/opt/dockers/{{ item }}/docker-compose.yml"
         owner: root
         group: root
-        mode: 0600
+        mode: "600"
         backup: true
       loop:
         - external
         - internal
-      tags: ['docker']
+      tags: ["docker"]
     - name: Spin up external containers
       ansible.builtin.import_tasks: docker-compose.yaml
       vars:
         zone: external
-      tags: ['docker']
+      tags: ["docker"]
     - name: Spin up internal containers
       ansible.builtin.import_tasks: docker-compose.yaml
       vars:
         zone: internal
-      tags: ['docker']
+      tags: ["docker"]
     - name: Cleanup docker
       community.docker.docker_prune:
         containers: true
@@ -304,7 +304,7 @@
           until: 48h
         images: true
         builder_cache: true
-      tags: ['docker']
+      tags: ["docker"]
   handlers:
     - name: Restart SSHD
       ansible.builtin.service:
