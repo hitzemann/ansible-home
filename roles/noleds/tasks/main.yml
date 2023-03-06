@@ -25,3 +25,4 @@
 - name: Commit pending changes
   uci:
     command: commit
+# vim: ts=4:sw=4:et:ft=ansible
